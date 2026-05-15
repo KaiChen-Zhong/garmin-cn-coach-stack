@@ -13,14 +13,19 @@ if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
     throw "GitHub CLI not found. Install gh first."
 }
 
+$Gh = (Get-Command gh.exe -ErrorAction SilentlyContinue | Select-Object -First 1).Source
+if ([string]::IsNullOrWhiteSpace($Gh)) {
+    throw "Official gh.exe not found. Install GitHub CLI."
+}
+
 if ($AuthMethod -eq "web") {
-    gh auth login --web --git-protocol https
+    & $Gh auth login --web --git-protocol https
 } else {
     $secure = Read-Host "Paste GitHub PAT locally" -AsSecureString
     $ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
     try {
         $token = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)
-        $token | gh auth login --with-token
+        $token | & $Gh auth login --with-token
     } finally {
         if ($ptr -ne [IntPtr]::Zero) {
             [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)
@@ -30,15 +35,15 @@ if ($AuthMethod -eq "web") {
 
 $resolvedOwner = $Owner
 if ([string]::IsNullOrWhiteSpace($resolvedOwner)) {
-    $resolvedOwner = gh api user --jq .login
+    $resolvedOwner = & $Gh api user --jq .login
 }
 
 $fullName = "$resolvedOwner/$RepoName"
 
 try {
-    gh repo view $fullName | Out-Null
+    & $Gh repo view $fullName | Out-Null
 } catch {
-    gh repo create $fullName --public --source . --remote origin --push --description "Local-first Garmin Connect China automation stack"
+    & $Gh repo create $fullName --public --source . --remote origin --push --description "Local-first Garmin Connect China automation stack"
     exit 0
 }
 
