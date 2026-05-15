@@ -8,8 +8,8 @@ This guide uses placeholders:
 ## 1. Install
 
 ```powershell
-git clone <YOUR_REPO_URL> garmin-cn-fitness-coach
-cd garmin-cn-fitness-coach
+git clone <YOUR_REPO_URL> garmin-cn-coach-stack
+cd garmin-cn-coach-stack
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt

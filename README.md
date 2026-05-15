@@ -1,6 +1,6 @@
-# Garmin CN Fitness Coach
+# Garmin CN Coach Stack
 
-Garmin CN Fitness Coach is a local-first automation toolkit for Garmin Connect China.
+Garmin CN Coach Stack is local-first automation toolkit for Garmin Connect China.
 
 It combines:
 - Garmin Connect CN data export/import
@@ -11,7 +11,7 @@ It combines:
 - daily/weekly/monthly/deep review reports
 - WorkBuddy / OpenClaw / Hermes skill integration
 
-Sensitive user data is not meant to be committed. Keep `.env`, `data/`, `obsidian/`, `logs/`, and `.workbuddy/` local.
+Sensitive user data must stay local. Keep `.env`, `data/`, `obsidian/`, `logs/`, and `.workbuddy/` out of Git.
 
 ## Features
 
@@ -28,8 +28,8 @@ Sensitive user data is not meant to be committed. Keep `.env`, `data/`, `obsidia
 ## Install
 
 ```powershell
-git clone <YOUR_REPO_URL> garmin-cn-fitness-coach
-cd garmin-cn-fitness-coach
+git clone <YOUR_REPO_URL> garmin-cn-coach-stack
+cd garmin-cn-coach-stack
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
@@ -275,3 +275,17 @@ rg -n "<YOUR_REAL_EMAIL>|<YOUR_LOCAL_USERNAME>|<YOUR_DEVICE_ID>|<YOUR_ACTIVITY_I
 Expected: no real email, password, token, device ID, activity ID, or personal path in public files.
 
 The `.gitignore` already excludes generated/private folders.
+
+## Publish to GitHub
+
+Recommended:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\publish_github.ps1 -RepoName garmin-cn-coach-stack -AuthMethod web
+```
+
+If you must use PAT, the script prompts locally and never stores token in repo:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\publish_github.ps1 -RepoName garmin-cn-coach-stack -AuthMethod token
+```
