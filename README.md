@@ -2,6 +2,8 @@
 
 Garmin CN Coach Stack is local-first automation toolkit for Garmin Connect China.
 
+If you are an agent, read `AGENTS.md` first, then `docs/REPRODUCTION.md`.
+
 It combines:
 - Garmin Connect CN data export/import
 - MCP tools for AI agents
@@ -71,6 +73,24 @@ For reuse on another computer:
 3. Fill own Garmin and GitHub values locally
 4. Run `python install_integrations.py`
 5. Keep `data/`, `obsidian/`, `logs/`, and `.workbuddy/` out of Git
+
+## Reproduce
+
+Exact rebuild path for another machine:
+
+```powershell
+git clone <REPO_URL>
+cd garmin-cn-coach-stack
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+Copy-Item .env.example .env
+python install_integrations.py
+python main.py diagnose --cn
+python main.py fitness-coach review --cn --deep
+```
+
+For same history and same reports, copy `data/`, `obsidian/`, `.workbuddy/`, and `logs/` from old machine before deep review.
 
 ## First Run
 

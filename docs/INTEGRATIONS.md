@@ -2,6 +2,8 @@
 
 This project is designed as one core implementation with several thin agent entry points.
 
+If you are an agent, read `AGENTS.md` and `docs/REPRODUCTION.md` first.
+
 Core implementation:
 
 ```text
