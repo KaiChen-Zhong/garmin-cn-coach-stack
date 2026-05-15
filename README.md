@@ -54,6 +54,24 @@ GARMIN_CSRF_TOKEN=
 
 Only fill those if password login cannot establish a CN web session.
 
+## Secrets
+
+Do not put secrets into Git or chat.
+
+Use this split:
+
+- `README.md` and `.env.example`: public template only
+- `.env`: local-only Garmin login, API key, and fallback tokens
+- GitHub auth: one-time local `gh auth login --web` or SSH key on your own machine
+
+For reuse on another computer:
+
+1. Clone repo
+2. Copy `.env.example` to `.env`
+3. Fill own Garmin and GitHub values locally
+4. Run `python install_integrations.py`
+5. Keep `data/`, `obsidian/`, `logs/`, and `.workbuddy/` out of Git
+
 ## First Run
 
 ```powershell

@@ -25,6 +25,14 @@ GARMIN_IS_CN=true
 GARMIN_API_KEY=change-me-to-a-random-string
 ```
 
+Keep this file local only. Never commit it.
+
+For GitHub auth, use one local method:
+
+- `gh auth login --web` once
+- SSH key on your own machine
+- Windows Credential Manager via Git Credential Manager
+
 ## 2. Verify Garmin CN
 
 ```powershell
@@ -189,3 +197,10 @@ Before publishing:
 ```powershell
 rg -n "<YOUR_REAL_EMAIL>|<YOUR_LOCAL_USERNAME>|<YOUR_DEVICE_ID>|<YOUR_ACTIVITY_ID>|<YOUR_TOKEN_FRAGMENT>" -S .
 ```
+
+If you move to another PC, repeat only:
+
+1. clone repo
+2. copy `.env.example` to `.env`
+3. fill local values
+4. run `python install_integrations.py`
