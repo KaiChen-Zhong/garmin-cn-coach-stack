@@ -276,6 +276,45 @@ def cmd_serve(args):
     start_server(host=args.host, port=args.port)
 
 
+def cmd_sync_getnote(args):
+    """运行 Garmin 复盘并写入 Get笔记"""
+    from fitness_workflow import run_fitness_review
+    from getnote_client import save_garmin_review_to_getnote
+
+    deep = args.mode == "deep"
+    sync_mode = "full" if deep else args.sync_mode
+    lookback = max(args.lookback, 365) if deep else args.lookback
+    weeks = max(args.weeks, 8) if deep else args.weeks
+    report = run_fitness_review(
+        target=args.date,
+        data_dir=args.data_dir or str(PROJECT_ROOT / "data"),
+        lookback_days=lookback,
+        weeks=weeks,
+        sync=not args.no_sync,
+        sync_mode=sync_mode,
+        write_memory=not args.no_write,
+        import_plan=args.import_plan,
+        include_easy_workouts=args.include_easy_workouts,
+        is_cn=_region_override(args),
+        deep=deep,
+    )
+    title_prefix = {
+        "daily": "Garmin 今日复盘",
+        "weekly": "Garmin 周复盘",
+        "deep": "Garmin 深度复盘",
+    }.get(args.mode, "Garmin 今日复盘")
+    target = report.get("date") or date.today().isoformat()
+    title = args.title or f"{title_prefix} {target}"
+    tags = [tag.strip() for tag in (args.tags or "Garmin,训练复盘,恢复,AI教练").split(",") if tag.strip()]
+    result = save_garmin_review_to_getnote(report, title=title, tags=tags)
+    print(json.dumps({
+        "status": "ok",
+        "getnote": result,
+        "summary": report.get("summary"),
+        "date": target,
+    }, ensure_ascii=False, indent=2, default=str))
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Garmin Connect 自动化工具",
@@ -296,6 +335,7 @@ def main():
   python main.py coach morning --cn                 # 生成晨报
   python main.py coach evening --cn                 # 生成晚报
   python main.py warehouse refresh                  # 刷新 SQLite 仓库
+  python main.py sync-getnote --daily --cn          # 复盘并写入 Get笔记
   python main.py mcp                                # 启动 MCP stdio 服务
   python main.py serve                              # 启动API服务
         """,
@@ -381,6 +421,26 @@ def main():
     serve_parser.add_argument("--host", type=str, default="127.0.0.1", help="监听地址")
     serve_parser.add_argument("--port", type=int, default=8190, help="监听端口")
 
+    # sync-getnote
+    getnote_parser = subparsers.add_parser("sync-getnote", help="运行 Garmin 复盘并写入 Get笔记")
+    getnote_mode = getnote_parser.add_mutually_exclusive_group()
+    getnote_mode.add_argument("--daily", action="store_const", dest="mode", const="daily", help="今日复盘")
+    getnote_mode.add_argument("--weekly", action="store_const", dest="mode", const="weekly", help="周复盘标题")
+    getnote_mode.add_argument("--deep", action="store_const", dest="mode", const="deep", help="深度复盘")
+    getnote_parser.set_defaults(mode="daily")
+    getnote_parser.add_argument("--date", type=str, help="目标日期 YYYY-MM-DD")
+    getnote_parser.add_argument("--lookback", type=int, default=7, help="回溯天数")
+    getnote_parser.add_argument("--weeks", type=int, default=4, help="训练计划周数")
+    getnote_parser.add_argument("--sync-mode", choices=["smart", "quick", "full", "none"], default="quick", help="同步模式")
+    getnote_parser.add_argument("--data-dir", type=str, help="数据目录")
+    getnote_parser.add_argument("--title", type=str, help="Get笔记标题")
+    getnote_parser.add_argument("--tags", type=str, help="逗号分隔标签")
+    getnote_parser.add_argument("--no-sync", action="store_true", help="不重新拉取 Garmin 数据")
+    getnote_parser.add_argument("--no-write", action="store_true", help="不写 Obsidian")
+    getnote_parser.add_argument("--import-plan", action="store_true", help="把训练计划导入 Garmin 日程")
+    getnote_parser.add_argument("--include-easy-workouts", action="store_true", help="导入计划时包含 easy run")
+    add_region_flags(getnote_parser)
+
     args = parser.parse_args()
 
     if args.command == "login":
@@ -405,6 +465,8 @@ def main():
         cmd_mcp(args)
     elif args.command == "serve":
         cmd_serve(args)
+    elif args.command == "sync-getnote":
+        cmd_sync_getnote(args)
     else:
         parser.print_help()
 

@@ -36,6 +36,13 @@ Deep comprehensive review:
 python main.py fitness-coach review --cn --deep
 ```
 
+Get笔记 automatic sync:
+
+```powershell
+python main.py sync-getnote --daily --cn
+python main.py sync-getnote --deep --cn
+```
+
 ## MCP
 
 Tool:
@@ -129,3 +136,13 @@ Use garmin-fitness and call garmin.fitness_review for a Garmin review.
 - Obsidian reports: `obsidian/`
 
 These are local/private and ignored by Git.
+
+## MaxHermes / MaxClaw
+
+Use Get笔记 as the cloud bridge:
+
+```text
+Local Garmin project -> sync-getnote -> Get笔记 -> MaxHermes / MaxClaw
+```
+
+After MaxHermes / MaxClaw has Get笔记 enabled, ask it to read recent Garmin notes and produce training/recovery analysis.

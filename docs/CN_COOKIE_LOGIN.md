@@ -68,8 +68,8 @@ Keep `GARMIN_JWT_WEB` too if already filled.
 .\.venv\Scripts\python.exe main.py diagnose --cn
 ```
 
-## Security
+## Local Session
 
-- Never commit `.env`
-- Never paste `JWT_WEB` into chat
-- If leaked, log out Garmin web sessions and log in again to rotate cookie
+- `JWT_WEB` and `GARMIN_COOKIE_HEADER` are normal local session inputs for this project.
+- Store them in `.env` on the target machine.
+- Refresh them by logging in again when Garmin CN expires the browser session.

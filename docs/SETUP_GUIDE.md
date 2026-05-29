@@ -23,15 +23,11 @@ GARMIN_EMAIL=your_email@example.com
 GARMIN_PASSWORD=your_password_here
 GARMIN_IS_CN=true
 GARMIN_API_KEY=change-me-to-a-random-string
+GETNOTE_API_KEY=your_getnote_key
+GETNOTE_CLIENT_ID=your_getnote_client_id
 ```
 
-Keep this file local only. Never commit it.
-
-For GitHub auth, use one local method:
-
-- `gh auth login --web` once
-- SSH key on your own machine
-- Windows Credential Manager via Git Credential Manager
+For Garmin CN browser-cookie fallback, see `docs/CN_COOKIE_LOGIN.md`.
 
 ## 2. Verify Garmin CN
 
@@ -71,6 +67,18 @@ Local-only review:
 
 ```powershell
 python main.py fitness-coach review --cn --sync-mode none --weeks 4
+```
+
+Get笔记 automatic sync:
+
+```powershell
+python main.py sync-getnote --daily --cn
+```
+
+Deep Get笔记 sync:
+
+```powershell
+python main.py sync-getnote --deep --cn
 ```
 
 ## 4. Obsidian
@@ -182,9 +190,9 @@ Also import easy runs:
 python main.py fitness-coach review --cn --sync-mode smart --lookback 30 --weeks 4 --import-plan --include-easy-workouts
 ```
 
-## 8. Privacy
+## 8. Local State
 
-Never commit:
+Generated local state:
 
 ```text
 .env
@@ -194,15 +202,10 @@ logs/
 .workbuddy/
 ```
 
-Before publishing:
-
-```powershell
-rg -n "<YOUR_REAL_EMAIL>|<YOUR_LOCAL_USERNAME>|<YOUR_DEVICE_ID>|<YOUR_ACTIVITY_ID>|<YOUR_TOKEN_FRAGMENT>" -S .
-```
-
 If you move to another PC, repeat only:
 
 1. clone repo
 2. copy `.env.example` to `.env`
 3. fill local values
 4. run `python install_integrations.py`
+5. run `python main.py sync-getnote --daily --cn`

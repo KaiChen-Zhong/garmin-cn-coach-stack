@@ -9,11 +9,12 @@ It combines:
 - MCP tools for AI agents
 - rule-based fitness coach workflows
 - Obsidian long-term memory
+- Get笔记 automatic sync
 - SQLite warehouse
 - daily/weekly/monthly/deep review reports
 - WorkBuddy / OpenClaw / Hermes skill integration
 
-Sensitive user data must stay local. Keep `.env`, `data/`, `obsidian/`, `logs/`, and `.workbuddy/` out of Git.
+This repo is designed for full local automation. Clone it, fill `.env`, allow local tools to read browser cookies when Garmin CN requires them, and run the sync commands.
 
 ## Features
 
@@ -25,6 +26,7 @@ Sensitive user data must stay local. Keep `.env`, `data/`, `obsidian/`, `logs/`,
 - Coach reports: morning, evening, weekly, monthly, alerts, plan, gear, race confidence
 - Deep review mode: full export, at least 365-day activity lookback, 8-week plan, data inventory
 - Obsidian reports and manual review templates
+- Get笔记 sync command for MaxHermes / MaxClaw cloud workflows
 - Local SQLite warehouse and metric cache
 
 ## Install
@@ -45,6 +47,8 @@ GARMIN_EMAIL=your_email@example.com
 GARMIN_PASSWORD=your_password_here
 GARMIN_IS_CN=true
 GARMIN_API_KEY=change-me-to-a-random-string
+GETNOTE_API_KEY=your_getnote_key
+GETNOTE_CLIENT_ID=your_getnote_client_id
 ```
 
 Optional browser-cookie fallback:
@@ -58,15 +62,17 @@ Only fill those if password login cannot establish a CN web session.
 
 If diagnosis says `connect.garmin.cn 当前登录需要可用 JWT_WEB cookie 或浏览器会话`, follow `docs/CN_COOKIE_LOGIN.md`.
 
-## Secrets
+## Local Automation Permissions
 
-Do not put secrets into Git or chat.
+For a personal machine or a trusted remote setup, allow the local agent to:
 
-Use this split:
-
-- `README.md` and `.env.example`: public template only
-- `.env`: local-only Garmin login, API key, and fallback tokens
-- GitHub auth: one-time local `gh auth login --web` or SSH key on your own machine
+- install Python / Node dependencies
+- edit `.env` and local app configs
+- read browser cookies for `connect.garmin.cn` when password login is blocked
+- write Garmin exports to `data/`
+- write reports to `obsidian/`
+- write summaries to Get笔记
+- configure Claude Desktop / MCP / WorkBuddy / OpenClaw / Hermes
 
 For reuse on another computer:
 
@@ -74,7 +80,7 @@ For reuse on another computer:
 2. Copy `.env.example` to `.env`
 3. Fill own Garmin and GitHub values locally
 4. Run `python install_integrations.py`
-5. Keep `data/`, `obsidian/`, `logs/`, and `.workbuddy/` out of Git
+5. Run `python main.py sync-getnote --daily --cn` if Get笔记 is configured
 
 ## Reproduce
 
@@ -125,6 +131,18 @@ Deep comprehensive review:
 
 ```powershell
 python main.py fitness-coach review --cn --deep
+```
+
+Get笔记 automatic daily sync:
+
+```powershell
+python main.py sync-getnote --daily --cn
+```
+
+Get笔记 deep sync:
+
+```powershell
+python main.py sync-getnote --deep --cn
 ```
 
 Deep mode forces:
@@ -260,9 +278,31 @@ For full review:
 Use garmin-fitness deep mode for a comprehensive Garmin review and data coverage check.
 ```
 
+## Get笔记 / MaxHermes / MaxClaw
+
+This is the recommended cloud workflow:
+
+```text
+Local Garmin project -> sync-getnote -> Get笔记 -> MaxHermes / MaxClaw
+```
+
+Run:
+
+```powershell
+python main.py sync-getnote --daily --cn
+```
+
+Then ask MaxHermes / MaxClaw:
+
+```text
+请读取 Get笔记中最近的 Garmin 今日复盘、周复盘、训练计划和恢复日志，分析今天的恢复、训练负荷、风险点和训练建议。
+```
+
+See `docs/GETNOTE_AUTOMATION.md`.
+
 ## Data Storage
 
-Do not commit personal data.
+Generated local state:
 
 Local-only paths:
 
@@ -294,6 +334,7 @@ exporter.py             export JSON data
 importer.py             import workouts/body data
 coach.py                coach algorithms
 fitness_workflow.py     unified review workflow
+getnote_client.py       Get笔记 OpenAPI sync
 metrics_cache.py        cached summaries and trends
 data_inventory.py       export coverage inventory
 warehouse.py            SQLite warehouse
@@ -303,18 +344,6 @@ main.py                 CLI
 integrations/           skills and agent instructions
 docs/                   setup and operation docs
 ```
-
-## Privacy Checklist Before GitHub
-
-Run searches for your own real identifiers, for example your email address, account name, device IDs, activity IDs, local username, and token values:
-
-```powershell
-rg -n "<YOUR_REAL_EMAIL>|<YOUR_LOCAL_USERNAME>|<YOUR_DEVICE_ID>|<YOUR_ACTIVITY_ID>|<YOUR_TOKEN_FRAGMENT>" -S .
-```
-
-Expected: no real email, password, token, device ID, activity ID, or personal path in public files.
-
-The `.gitignore` already excludes generated/private folders.
 
 ## Publish to GitHub
 
