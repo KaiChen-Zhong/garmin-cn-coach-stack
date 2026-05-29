@@ -36,6 +36,32 @@ GARMIN_CSRF_TOKEN=paste_csrf_value_here
 
 For read-only diagnosis and export, `JWT_WEB` is usually enough.
 
+## Full Cookie Header Fallback
+
+If diagnosis still shows:
+
+```text
+CN app csrf missing
+```
+
+copy the full browser cookie header.
+
+1. Keep Garmin Connect CN open in browser
+2. Press `F12`
+3. Open `Network`
+4. Refresh `https://connect.garmin.cn/app/home`
+5. Click request named `home` or `app`
+6. Open `Headers`
+7. Find `Request Headers`
+8. Copy the whole `Cookie:` value
+9. Put it into `.env`
+
+```text
+GARMIN_COOKIE_HEADER=paste_full_cookie_header_here
+```
+
+Keep `GARMIN_JWT_WEB` too if already filled.
+
 ## Retry
 
 ```powershell
@@ -47,4 +73,3 @@ For read-only diagnosis and export, `JWT_WEB` is usually enough.
 - Never commit `.env`
 - Never paste `JWT_WEB` into chat
 - If leaked, log out Garmin web sessions and log in again to rotate cookie
-

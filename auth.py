@@ -210,7 +210,14 @@ class GarminAuth:
             try:
                 jwt_web = os.getenv("GARMIN_JWT_WEB", "").strip()
                 csrf = os.getenv("GARMIN_CSRF_TOKEN", "").strip()
-                client = GarminCnClient(self.email, self.password, jwt_web=jwt_web, csrf_token=csrf)
+                cookie_header = os.getenv("GARMIN_COOKIE_HEADER", "").strip()
+                client = GarminCnClient(
+                    self.email,
+                    self.password,
+                    jwt_web=jwt_web,
+                    csrf_token=csrf,
+                    cookie_header=cookie_header,
+                )
                 client.login(tokenstore=self.token_path)
                 self.client = client
                 logger.info("CN login success")

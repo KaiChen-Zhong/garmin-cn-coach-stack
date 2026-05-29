@@ -36,11 +36,19 @@ class _CnProfile:
 
 
 class GarminCnClient:
-    def __init__(self, email: str, password: str, jwt_web: str | None = None, csrf_token: str | None = None):
+    def __init__(
+        self,
+        email: str,
+        password: str,
+        jwt_web: str | None = None,
+        csrf_token: str | None = None,
+        cookie_header: str | None = None,
+    ):
         self.email = email
         self.password = password
         self.jwt_web = jwt_web or ""
         self.csrf_override = csrf_token or ""
+        self.cookie_header_override = cookie_header or ""
         self.session = cffi_requests.Session(impersonate="chrome", timeout=30)
         self.app_session = requests.Session()
         self.app_session.headers.update({"User-Agent": "Mozilla/5.0"})
@@ -53,7 +61,7 @@ class GarminCnClient:
 
     def login(self, tokenstore: str | None = None) -> "GarminCnClient":
         del tokenstore
-        if self.jwt_web:
+        if self.jwt_web or self.cookie_header_override:
             self._login_via_cookie()
         else:
             self._login_via_widget()
@@ -73,14 +81,27 @@ class GarminCnClient:
         return self
 
     def _login_via_cookie(self) -> None:
-        if not self.jwt_web:
-            raise RuntimeError("CN cookie login requires JWT_WEB")
+        if not self.jwt_web and not self.cookie_header_override:
+            raise RuntimeError("CN cookie login requires JWT_WEB or GARMIN_COOKIE_HEADER")
+        cookie_pairs: dict[str, str] = {}
+        if self.cookie_header_override:
+            for item in self.cookie_header_override.split(";"):
+                if "=" not in item:
+                    continue
+                key, value = item.strip().split("=", 1)
+                if key and value:
+                    cookie_pairs[key] = value
+        if self.jwt_web:
+            cookie_pairs["JWT_WEB"] = self.jwt_web
+        if "JWT_WEB" not in cookie_pairs:
+            raise RuntimeError("CN cookie login requires JWT_WEB cookie")
         for domain in (".connect.garmin.cn", "connect.garmin.cn"):
-            self.session.cookies.set("JWT_WEB", self.jwt_web, domain=domain, path="/")
-            self.app_session.cookies.set("JWT_WEB", self.jwt_web, domain=domain, path="/")
+            for key, value in cookie_pairs.items():
+                self.session.cookies.set(key, value, domain=domain, path="/")
+                self.app_session.cookies.set(key, value, domain=domain, path="/")
         if self.csrf_override:
             self.csrf_token = self.csrf_override
-        self.cookies_header = f"JWT_WEB={self.jwt_web}"
+        self.cookies_header = "; ".join(f"{key}={value}" for key, value in cookie_pairs.items())
 
     def _login_via_widget(self) -> None:
         sso_base = "https://sso.garmin.cn/sso"
@@ -167,9 +188,12 @@ class GarminCnClient:
             raise RuntimeError(f"CN app load failed: {r.status_code}")
 
         csrf = re.search(r'<meta name="csrf-token" content="([^"]+)"', r.text)
-        if not csrf:
+        if csrf:
+            self.csrf_token = csrf.group(1)
+        elif self.csrf_override:
+            self.csrf_token = self.csrf_override
+        else:
             raise RuntimeError("CN app csrf missing")
-        self.csrf_token = csrf.group(1)
 
         viewer_data = self._extract_window_json(r.text, "VIEWER_SOCIAL_PROFILE")
         if not viewer_data:
