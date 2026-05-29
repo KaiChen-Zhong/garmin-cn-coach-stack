@@ -39,6 +39,8 @@ For GitHub auth, use one local method:
 python main.py diagnose --cn
 ```
 
+If Garmin CN password login fails but browser login works, use browser-cookie fallback in `docs/CN_COOKIE_LOGIN.md`.
+
 Expected:
 
 - authenticated account profile

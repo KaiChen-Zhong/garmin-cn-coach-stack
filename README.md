@@ -56,6 +56,8 @@ GARMIN_CSRF_TOKEN=
 
 Only fill those if password login cannot establish a CN web session.
 
+If diagnosis says `connect.garmin.cn 当前登录需要可用 JWT_WEB cookie 或浏览器会话`, follow `docs/CN_COOKIE_LOGIN.md`.
+
 ## Secrets
 
 Do not put secrets into Git or chat.
