@@ -30,10 +30,9 @@ git clone <REPO_URL>
 cd garmin-cn-coach-stack
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 Copy-Item .env.example .env
 python install_integrations.py
 python main.py diagnose --cn
 python main.py fitness-coach review --cn --deep
 ```
-
